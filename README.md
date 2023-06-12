@@ -1,2 +1,2 @@
 # LLVM-Backend
-An LLVM backend for the Void compiler.
+A Java LLVM wrapper via JNI bindings to the LLVM natives. Used by the Void compiler.
