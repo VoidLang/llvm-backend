@@ -3,18 +3,19 @@ package org.voidlang.llvm.element;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.llvm.LLVM.LLVMModuleRef;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
-public class Module implements Disposable {
+public class IRModule implements Disposable {
     private final LLVMModuleRef handle;
 
-    private final Context context;
+    private final IRContext context;
 
     private final String name;
 
-    Module(LLVMModuleRef handle, Context context, String name) {
+    IRModule(LLVMModuleRef handle, IRContext context, String name) {
         this.handle = handle;
         this.context = context;
         this.name = name;
@@ -37,7 +38,7 @@ public class Module implements Disposable {
         return handle;
     }
 
-    public Context getContext() {
+    public IRContext getContext() {
         return context;
     }
 
@@ -45,8 +46,16 @@ public class Module implements Disposable {
         return name;
     }
 
-    public static Module create(Context context, String name) {
-        return new Module(LLVMModuleCreateWithNameInContext(name, context.getHandle()), context, name);
+    public static IRModule create(IRContext context, String name) {
+        return new IRModule(LLVMModuleCreateWithNameInContext(name, context.getHandle()), context, name);
+    }
+
+    public IRMemoryBuffer writeToMemory() {
+        return new IRMemoryBuffer(LLVMWriteBitcodeToMemoryBuffer(handle));
+    }
+
+    public String print() {
+        return LLVMPrintModuleToString(handle).getString(StandardCharsets.UTF_8);
     }
 
     public enum VerifierFailureAction {

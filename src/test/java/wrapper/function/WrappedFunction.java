@@ -18,30 +18,30 @@ public class WrappedFunction {
         LLVMInitializeNativeTarget();
 
         // Create the LLVM context and module
-        Context context = Context.create();
-        Module module = Module.create(context, "my_module");
-        Builder builder = Builder.create(context);
+        IRContext context = IRContext.create();
+        IRModule module = IRModule.create(context, "my_module");
+        IRBuilder builder = IRBuilder.create(context);
 
         // Create the function type
-        Type returnType = Type.int32(context);
-        FunctionType functionType = FunctionType.create(context, returnType, new ArrayList<>(), false);
+        IRType returnType = IRType.int32(context);
+        IRFunctionType functionType = IRFunctionType.create(context, returnType, new ArrayList<>(), false);
 
         // Create the function
-        Function function = Function.create(module, "my_function", functionType);
+        IRFunction function = IRFunction.create(module, "my_function", functionType);
 
         // Create the entry basic block
-        Block block = Block.create(context, function, "entry");
+        IRBlock block = IRBlock.create(context, function, "entry");
         builder.positionAtEnd(block);
 
         // Create the constant value
-        Value constantValue = returnType.constInt(1337, false);
+        IRValue constantValue = returnType.constInt(1337, false);
 
         // Build the return instruction
         builder.returnValue(constantValue);
 
         // Verify the module
         BytePointer error = new BytePointer((Pointer) null);
-        if (!module.verify(Module.VerifierFailureAction.PRINT_MESSAGE, error)) {
+        if (!module.verify(IRModule.VerifierFailureAction.PRINT_MESSAGE, error)) {
             System.err.println("Error: " + error.getString());
             LLVMDisposeMessage(error);
             return;
@@ -51,7 +51,7 @@ public class WrappedFunction {
         module.dump();
 
         // Stage 5: Execute the code using MCJIT
-        ExecutionEngine engine = ExecutionEngine.create();
+        IRExecutionEngine engine = IRExecutionEngine.create();
         MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
         if (!engine.createMCJITCompilerForModule(module, options, error)) {
             System.err.println("Failed to create JIT compiler: " + error.getString());
@@ -59,7 +59,7 @@ public class WrappedFunction {
             return;
         }
 
-        GenericValue result = engine.runFunction(function, new ArrayList<>());
+        IRGenericValue result = engine.runFunction(function, new ArrayList<>());
         System.out.println();
         System.out.println("Result: " + result.toInt());
 

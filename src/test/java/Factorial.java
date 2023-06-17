@@ -111,7 +111,7 @@ public class Factorial {
         System.out.println("; Result: " + LLVMGenericValueToInt(result, /* signExtend */ 0));
 
         // WRITE IR OUTPUT TO FILE
-        LLVMPrintModuleToFile(module, "D:\\.dev\\GitHub\\LLVM-Backend\\data\\output.ll", (BytePointer) null);
+        LLVMPrintModuleToFile(module, "D:\\.dev\\GitHub\\LLVM-Backend\\data\\output.ll", error);
         LLVMWriteBitcodeToFile(module, "D:\\.dev\\GitHub\\LLVM-Backend\\data\\output.bc");
 
         // Stage 6: Dispose of the allocated resources
@@ -119,7 +119,5 @@ public class Factorial {
         LLVMDisposePassManager(pm);
         LLVMDisposeBuilder(builder);
         LLVMContextDispose(context);
-
-
     }
 }

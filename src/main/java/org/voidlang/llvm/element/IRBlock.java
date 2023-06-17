@@ -4,13 +4,13 @@ import org.bytedeco.llvm.LLVM.LLVMBasicBlockRef;
 
 import static org.bytedeco.llvm.global.LLVM.LLVMAppendBasicBlockInContext;
 
-public class Block {
+public class IRBlock {
     private final LLVMBasicBlockRef handle;
-    private final Context context;
-    private final Function function;
+    private final IRContext context;
+    private final IRFunction function;
     private final String name;
 
-    Block(LLVMBasicBlockRef handle, Context context, Function function, String name) {
+    IRBlock(LLVMBasicBlockRef handle, IRContext context, IRFunction function, String name) {
         this.handle = handle;
         this.context = context;
         this.function = function;
@@ -21,11 +21,11 @@ public class Block {
         return handle;
     }
 
-    public Context getContext() {
+    public IRContext getContext() {
         return context;
     }
 
-    public Function getFunction() {
+    public IRFunction getFunction() {
         return function;
     }
 
@@ -33,8 +33,8 @@ public class Block {
         return name;
     }
 
-    public static Block create(Context context, Function function, String name) {
+    public static IRBlock create(IRContext context, IRFunction function, String name) {
         LLVMBasicBlockRef handle = LLVMAppendBasicBlockInContext(context.getHandle(), function.getHandle(), name);
-        return new Block(handle, context, function, name);
+        return new IRBlock(handle, context, function, name);
     }
 }

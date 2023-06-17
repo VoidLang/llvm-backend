@@ -4,10 +4,10 @@ import org.bytedeco.llvm.LLVM.LLVMGenericValueRef;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
-public class GenericValue {
+public class IRGenericValue {
     private final LLVMGenericValueRef handle;
 
-    public GenericValue(LLVMGenericValueRef handle) {
+    public IRGenericValue(LLVMGenericValueRef handle) {
         this.handle = handle;
     }
 
@@ -23,7 +23,7 @@ public class GenericValue {
         return handle;
     }
 
-    public static GenericValue genericInt(Type type, int value, boolean isSigned) {
-        return new GenericValue(LLVMCreateGenericValueOfInt(type.getHandle(), value, isSigned ? 1 : 0));
+    public static IRGenericValue genericInt(IRType type, int value, boolean isSigned) {
+        return new IRGenericValue(LLVMCreateGenericValueOfInt(type.getHandle(), value, isSigned ? 1 : 0));
     }
 }

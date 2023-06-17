@@ -2,11 +2,6 @@ package wrapper.sum;
 
 import org.bytedeco.javacpp.*;
 import org.bytedeco.llvm.LLVM.*;
-import org.voidlang.llvm.element.ExecutionEngine;
-import org.voidlang.llvm.element.GenericValue;
-import org.voidlang.llvm.element.MMCJITCompilerOptions;
-
-import java.util.ArrayList;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 

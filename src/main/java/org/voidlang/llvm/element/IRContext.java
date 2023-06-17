@@ -4,10 +4,10 @@ import org.bytedeco.llvm.LLVM.LLVMContextRef;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
-public class Context implements Disposable {
+public class IRContext implements Disposable {
     private final LLVMContextRef handle;
 
-    Context(LLVMContextRef handle) {
+    IRContext(LLVMContextRef handle) {
         this.handle = handle;
     }
 
@@ -24,11 +24,11 @@ public class Context implements Disposable {
         LLVMContextDispose(handle);
     }
 
-    public static Context create() {
-        return new Context(LLVMContextCreate());
+    public static IRContext create() {
+        return new IRContext(LLVMContextCreate());
     }
 
-    public static Context global() {
-        return new Context(LLVMGetGlobalContext());
+    public static IRContext global() {
+        return new IRContext(LLVMGetGlobalContext());
     }
 }

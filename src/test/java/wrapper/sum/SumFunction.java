@@ -19,51 +19,51 @@ public class SumFunction {
         LLVMInitializeNativeTarget();
 
         // Create the LLVM context and module
-        Context context = Context.create();
-        Module module = Module.create(context, "my_module");
-        Builder builder = Builder.create(context);
+        IRContext context = IRContext.create();
+        IRModule module = IRModule.create(context, "my_module");
+        IRBuilder builder = IRBuilder.create(context);
 
         // Create the function type
-        Type returnType = Type.int32(context);
-        ArrayList<Type> parameterTypes = new ArrayList<>();
+        IRType returnType = IRType.int32(context);
+        ArrayList<IRType> parameterTypes = new ArrayList<>();
         parameterTypes.add(returnType);
         parameterTypes.add(returnType);
-        FunctionType sumType = FunctionType.create(context, returnType, parameterTypes, false);
+        IRFunctionType sumType = IRFunctionType.create(context, returnType, parameterTypes, false);
 
         // Create the function
-        Function sum = Function.create(module, "sum", sumType);
+        IRFunction sum = IRFunction.create(module, "sum", sumType);
 
         // Create the entry basic block
-        Block block = Block.create(context, sum, "entry");
+        IRBlock block = IRBlock.create(context, sum, "entry");
         builder.positionAtEnd(block);
 
         // get the two operands
-        Value left = sum.getParameter(0);
-        Value right = sum.getParameter(1);
+        IRValue left = sum.getParameter(0);
+        IRValue right = sum.getParameter(1);
 
         // add the two operands and return their sum
-        Value add = builder.add(left, right, "result");
+        IRValue add = builder.add(left, right, "result");
         builder.returnValue(add);
 
-        FunctionType mainType = FunctionType.create(context, returnType, new ArrayList<>(), false);
+        IRFunctionType mainType = IRFunctionType.create(context, returnType, new ArrayList<>(), false);
 
-        Function main = Function.create(module, "main", mainType);
+        IRFunction main = IRFunction.create(module, "main", mainType);
 
-        block = Block.create(context, main, "entry");
+        block = IRBlock.create(context, main, "entry");
         builder.positionAtEnd(block);
 
 
-        List<Value> arguments = new ArrayList<>();
+        List<IRValue> arguments = new ArrayList<>();
         arguments.add(returnType.constInt(2));
         arguments.add(returnType.constInt(3));
 
-        Value res = builder.call(sum, arguments, "call_res");
+        IRValue res = builder.call(sum, arguments, "call_res");
         builder.returnValue(res);
 
 
         // Verify the module
         BytePointer error = new BytePointer((Pointer) null);
-        if (!module.verify(Module.VerifierFailureAction.PRINT_MESSAGE, error)) {
+        if (!module.verify(IRModule.VerifierFailureAction.PRINT_MESSAGE, error)) {
             System.err.println("Error: " + error.getString());
             LLVMDisposeMessage(error);
             return;
@@ -73,7 +73,7 @@ public class SumFunction {
         module.dump();
 
         // Stage 5: Execute the code using MCJIT
-        ExecutionEngine engine = ExecutionEngine.create();
+        IRExecutionEngine engine = IRExecutionEngine.create();
         MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
         if (!engine.createMCJITCompilerForModule(module, options, error)) {
             System.err.println("Failed to create JIT compiler: " + error.getString());
@@ -81,7 +81,7 @@ public class SumFunction {
             return;
         }
 
-        GenericValue result = engine.runFunction(main, new ArrayList<>());
+        IRGenericValue result = engine.runFunction(main, new ArrayList<>());
         System.out.println();
         System.out.println("Result: " + result.toInt());
 
