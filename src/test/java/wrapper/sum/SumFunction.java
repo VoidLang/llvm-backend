@@ -73,7 +73,7 @@ public class SumFunction {
         module.dump();
 
         // Stage 5: Execute the code using MCJIT
-        IRExecutionEngine engine = IRExecutionEngine.create();
+        ExecutionEngine engine = ExecutionEngine.create();
         MMCJITCompilerOptions options = MMCJITCompilerOptions.create();
         if (!engine.createMCJITCompilerForModule(module, options, error)) {
             System.err.println("Failed to create JIT compiler: " + error.getString());

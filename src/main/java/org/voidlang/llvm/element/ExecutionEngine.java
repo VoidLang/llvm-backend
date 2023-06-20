@@ -10,10 +10,10 @@ import java.util.List;
 import static org.bytedeco.llvm.global.LLVM.LLVMCreateMCJITCompilerForModule;
 import static org.bytedeco.llvm.global.LLVM.LLVMRunFunction;
 
-public class IRExecutionEngine {
+public class ExecutionEngine {
     private final LLVMExecutionEngineRef handle;
 
-    IRExecutionEngine(LLVMExecutionEngineRef handle) {
+    ExecutionEngine(LLVMExecutionEngineRef handle) {
         this.handle = handle;
     }
 
@@ -24,7 +24,7 @@ public class IRExecutionEngine {
     public IRGenericValue runFunction(IRFunction function, List<IRGenericValue> arguments) {
         int argsLength = arguments.size();
         PointerPointer<LLVMGenericValueRef> args = new PointerPointer<>(argsLength);
-        for (int i = 0; i < arguments.size(); i++)
+        for (int i = 0; i < argsLength; i++)
             args.put(i, arguments.get(i).getHandle());
         return new IRGenericValue(LLVMRunFunction(handle, function.getHandle(), argsLength, args));
     }
@@ -33,7 +33,7 @@ public class IRExecutionEngine {
         return handle;
     }
 
-    public static IRExecutionEngine create() {
-        return new IRExecutionEngine(new LLVMExecutionEngineRef());
+    public static ExecutionEngine create() {
+        return new ExecutionEngine(new LLVMExecutionEngineRef());
     }
 }
