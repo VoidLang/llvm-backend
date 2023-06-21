@@ -37,4 +37,10 @@ public class IRBlock {
         LLVMBasicBlockRef handle = LLVMAppendBasicBlockInContext(context.getHandle(), function.getHandle(), name);
         return new IRBlock(handle, context, function, name);
     }
+
+    public static IRBlock create(IRFunction function, String name) {
+        IRContext context = function.getType().getContext();
+        LLVMBasicBlockRef handle = LLVMAppendBasicBlockInContext(context.getHandle(), function.getHandle(), name);
+        return new IRBlock(handle, context, function, name);
+    }
 }

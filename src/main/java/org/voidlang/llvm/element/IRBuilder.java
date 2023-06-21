@@ -400,6 +400,24 @@ public class IRBuilder implements Disposable {
         return new IRValue(res);
     }
 
+    public IRValue alloc(IRStruct type, String name) {
+        return new IRValue(LLVMBuildAlloca(handle, type.getHandle(), "myCar"));
+    }
+
+    public IRValue structMemberPointer(IRStruct type, IRValue instance, int memberIndex, String name) {
+        return new IRValue(LLVMBuildStructGEP2(handle, type.getHandle(), instance.getHandle(), memberIndex, name));
+    }
+
+    public IRValue store(IRValue value, IRValue pointer) {
+        return new IRValue(LLVMBuildStore(handle, value.getHandle(), pointer.getHandle()));
+    }
+
+    public IRValue load(IRType type, IRValue pointer, String name) {
+        return new IRValue(LLVMBuildLoad2(handle, type.getHandle(), pointer.getHandle(), name));
+    }
+
+
+
     @Override
     public void dispose() {
         LLVMDisposeBuilder(handle);

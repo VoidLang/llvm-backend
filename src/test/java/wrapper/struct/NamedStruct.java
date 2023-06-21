@@ -1,15 +1,16 @@
-package wrapper.sum;
+package wrapper.struct;
 
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.llvm.LLVM.LLVMValueRef;
 import org.voidlang.llvm.element.*;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static org.bytedeco.llvm.global.LLVM.*;
+import static org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget;
 
-public class SumFunction {
+public class NamedStruct {
     public static void main(String[] args) {
         // Initialize LLVM components
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
@@ -23,42 +24,40 @@ public class SumFunction {
         IRModule module = IRModule.create(context, "my_module");
         IRBuilder builder = IRBuilder.create(context);
 
-        // Create the function type
-        IRType returnType = IRType.int32(context);
-        ArrayList<IRType> parameterTypes = new ArrayList<>();
-        parameterTypes.add(returnType);
-        parameterTypes.add(returnType);
-        IRFunctionType sumType = IRFunctionType.create(context, returnType, parameterTypes, false);
+        IRType i32type = IRType.int32(context);
 
-        // Create the function
-        IRFunction sum = IRFunction.create(module, "sum", sumType);
+        // create a named type "Car" with the two i32 fields
+        ArrayList<IRType> members = new ArrayList<>();
+        members.add(i32type);
+        members.add(i32type);
+        IRStruct carType = IRStruct.define(context, "Car", members);
 
-        // Create the entry basic block
-        IRBlock block = IRBlock.create(context, sum, "entry");
-        builder.positionAtEnd(block);
-
-        // get the two operands
-        IRValue left = sum.getParameter(0);
-        IRValue right = sum.getParameter(1);
-
-        // add the two operands and return their sum
-        IRValue add = builder.add(left, right, "result");
-        builder.returnValue(add);
-
-        IRFunctionType mainType = IRFunctionType.create(context, returnType, new ArrayList<>(), false);
+        // create the program entry point
+        IRFunctionType mainType = IRFunctionType.create(context, i32type, new ArrayList<>(), false);
         IRFunction main = IRFunction.create(module, "main", mainType);
 
-        block = IRBlock.create(context, main, "entry");
+        // create the entry section of the main method
+        IRBlock block = IRBlock.create(context, main, "entry");
         builder.positionAtEnd(block);
 
+        // create an instance of a Car as a pointer on the stack
+        IRValue carInstance = builder.alloc(carType, "myCar");
 
-        List<IRValue> arguments = new ArrayList<>();
-        arguments.add(returnType.constInt(2));
-        arguments.add(returnType.constInt(3));
+        // get the field pointers from the struct by their declaration indices
+        IRValue speedPtr = builder.structMemberPointer(carType, carInstance,0, "speedPtr");
+        IRValue weightPtr = builder.structMemberPointer(carType, carInstance, 1, "weightPtr");
 
-        IRValue res = builder.call(sum, arguments, "call_res");
-        builder.returnValue(res);
+        // assign the pointers of the Car instance with the following data: { speed = 10, weight = 20 }
+        builder.store(i32type.constInt(10), speedPtr);
+        builder.store(i32type.constInt(20), weightPtr);
 
+        // load the values from the previously assigned pointers, and store them in two local variables
+        IRValue speed = builder.load(i32type, speedPtr, "speed");
+        IRValue weight = builder.load(i32type, weightPtr, "weight");
+
+        // make the main method return their sum
+        IRValue sum = builder.add(speed, weight, "sum");
+        builder.returnValue(sum);
 
         // Verify the module
         BytePointer error = new BytePointer((Pointer) null);

@@ -86,8 +86,6 @@ public class OriginalNamedStruct {
         System.out.println();
         System.out.println("Result: " + LLVMGenericValueToInt(result, 0));
 
-        System.out.println("Execution done successfully");
-
         LLVMDisposeBuilder(builder);
         LLVMDisposeModule(module);
         LLVMContextDispose(context);

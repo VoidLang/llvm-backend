@@ -101,4 +101,12 @@ public class IRType {
     public static IRType voidType(IRContext context) {
         return new IRType(LLVMVoidTypeInContext(context.getHandle()), context);
     }
+
+    public static IRType pointerType(IRType type, int addressSpace) {
+        return new IRType(LLVMPointerType(type.getHandle(), addressSpace), type.getContext());
+    }
+
+    public static IRType pointerType(IRType type) {
+        return pointerType(type, 0);
+    }
 }
