@@ -1,8 +1,7 @@
-package wrapper.struct;
+package wrapper.struct.definition;
 
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
-import org.bytedeco.llvm.LLVM.LLVMValueRef;
 import org.voidlang.llvm.element.*;
 
 import java.util.ArrayList;

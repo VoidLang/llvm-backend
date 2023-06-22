@@ -2,6 +2,7 @@ package wrapper.struct;
 
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.llvm.LLVM.LLVMValueRef;
 import org.voidlang.llvm.element.*;
 
 import java.util.ArrayList;
@@ -10,7 +11,7 @@ import java.util.Collections;
 import static org.bytedeco.llvm.global.LLVM.*;
 import static org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget;
 
-public class PassByReference {
+public class PassByValue {
     public static void main(String[] args) {
         // Initialize LLVM components
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
@@ -34,24 +35,24 @@ public class PassByReference {
         members.add(i32type);
         IRStruct carType = IRStruct.define(context, "Car", members);
 
-        // create the test function that takes in a pointer for Car
-        IRFunctionType testType = IRFunctionType.create(voidType, Collections.singletonList(IRType.pointerType(carType)));
+        // create the test function that takes in a Car value
+        IRFunctionType testType = IRFunctionType.create(voidType, Collections.singletonList(carType));
         IRFunction testFunction = IRFunction.create(module, "test", testType);
 
         // add the "entry" block to the function, so instructions can be added
         IRBlock testEntry = IRBlock.create(testFunction, "entry");
         builder.positionAtEnd(testEntry);
 
-        // get the Car pointer from the function parameters
+        // get the Car value from the function parameters
         IRValue parameter = testFunction.getParameter(0);
 
-        // get the field pointers from the struct by their declaration indices
-        IRValue testSpeedPtr = builder.structMemberPointer(carType, parameter, 0, "speedPtr");
-        IRValue testWeightPtr = builder.structMemberPointer(carType, parameter, 1, "weightPtr");
+        // assign new values for the Car parameter
+        builder.insert(parameter, i32type.constInt(100), 0, "speedInsert");
+        builder.insert(parameter, i32type.constInt(50), 1, "weightInsert");
 
-        // assign the pointers of the Car instance with the following data: { speed = 100, weight = 50 }
-        builder.store(i32type.constInt(100), testSpeedPtr);
-        builder.store(i32type.constInt(50), testWeightPtr);
+        // extract the field values from the Car parameter
+        builder.extract(parameter, 0, "speed");
+        builder.extract(parameter, 1, "weight");
 
         builder.returnVoid();
 
@@ -74,8 +75,12 @@ public class PassByReference {
         builder.store(i32type.constInt(10), speedPtr);
         builder.store(i32type.constInt(20), weightPtr);
 
-        // call the test function that takes in Car by reference, and modifies its fields
-        builder.call(testFunction, Collections.singletonList(carPointer));
+        // dereference the Car pointer, therefore it can be used as a value
+        IRValue carInstance = builder.load(carType, carPointer, "carVal");
+
+        // call the test function that takes in Car by value, therefore the changes made
+        // in test, will not affect the Car inside the main function
+        builder.call(testFunction, Collections.singletonList(carInstance));
 
         // load the values from the previously assigned pointers, and store them in two local variables
         IRValue speed = builder.load(i32type, speedPtr, "speed");

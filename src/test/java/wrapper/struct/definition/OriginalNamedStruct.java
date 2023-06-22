@@ -1,4 +1,4 @@
-package wrapper.struct;
+package wrapper.struct.definition;
 
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
@@ -43,11 +43,11 @@ public class OriginalNamedStruct {
         LLVMPositionBuilderAtEnd(builder, entryBlock);
 
         // create a new instance of the "Car" type, that is allocated on the STACK
-        LLVMValueRef carInstance = LLVMBuildAlloca(builder, structType, "myCar");
+        LLVMValueRef carPointer = LLVMBuildAlloca(builder, structType, "carPtr");
 
         // get the field pointers from the struct by their declaration indices
-        LLVMValueRef speedFieldPtr = LLVMBuildStructGEP2(builder, structType, carInstance,0, "speedPtr");
-        LLVMValueRef weightFieldPtr = LLVMBuildStructGEP2(builder, structType, carInstance, 1, "weightPtr");
+        LLVMValueRef speedFieldPtr = LLVMBuildStructGEP2(builder, structType, carPointer,0, "speedPtr");
+        LLVMValueRef weightFieldPtr = LLVMBuildStructGEP2(builder, structType, carPointer, 1, "weightPtr");
 
         // assign the pointers of the Car instance with the following data: { speed = 10, weight = 20 }
         LLVMBuildStore(builder, LLVMConstInt(returnType, 10, 0), speedFieldPtr);

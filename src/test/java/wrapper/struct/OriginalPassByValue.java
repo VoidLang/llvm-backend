@@ -7,7 +7,7 @@ import org.bytedeco.llvm.LLVM.*;
 
 import static org.bytedeco.llvm.global.LLVM.*;
 
-public class OriginalPassByReference {
+public class OriginalPassByValue {
     public static void main(String[] args) {
         // Initialize LLVM components
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
@@ -36,8 +36,8 @@ public class OriginalPassByReference {
         LLVMTypeRef i32type = LLVMInt32TypeInContext(context);
         LLVMTypeRef voidType = LLVMVoidTypeInContext(context);
 
-        // create the test function that takes in a pointer for Car
-        LLVMTypeRef[] testParams = new LLVMTypeRef[] { LLVMPointerType(structType, 0) };
+        // create the test function that takes in Car by value
+        LLVMTypeRef[] testParams = new LLVMTypeRef[] { structType };
         LLVMTypeRef testType = LLVMFunctionType(voidType, new PointerPointer<>(testParams), testParams.length, 0);
         LLVMValueRef testFunction = LLVMAddFunction(module, "test", testType);
 
@@ -45,20 +45,20 @@ public class OriginalPassByReference {
         LLVMBasicBlockRef testEntry = LLVMAppendBasicBlock(testFunction, "entry");
         LLVMPositionBuilderAtEnd(builder, testEntry);
 
-        // get the Car pointer from the function parameters
+        // get the Car instance from the function parameters
         LLVMValueRef param = LLVMGetParam(testFunction, 0);
 
-        // get the field pointers from the struct by their declaration indices
-        LLVMValueRef testSpeedPtr = LLVMBuildStructGEP2(builder, structType, param, 0, "speedPtr");
-        LLVMValueRef testWeightPtr = LLVMBuildStructGEP2(builder, structType, param, 1, "weightPtr");
+        // assign new values for the Car parameter
+        LLVMBuildInsertValue(builder, param, LLVMConstInt(i32type, 100, 0), 0, "speedInsert");
+        LLVMBuildInsertValue(builder, param, LLVMConstInt(i32type, 50, 0), 1, "weightInsert");
 
-        // assign the pointers of the Car instance with the following data: { speed = 100, weight = 50 }
-        LLVMBuildStore(builder, LLVMConstInt(i32type, 100, 0), testSpeedPtr);
-        LLVMBuildStore(builder, LLVMConstInt(i32type, 50, 0), testWeightPtr);
+        // extract the field values from the Car parameter
+        LLVMValueRef testSpeedValue = LLVMBuildExtractValue(builder, param, 0, "speed");
+        LLVMValueRef testWeightValue = LLVMBuildExtractValue(builder, param, 1, "weight");
 
         LLVMBuildRetVoid(builder);
 
-        // create a main method that return a 32-bit integer
+        // create a main method that returns a 32-bit integer
         LLVMTypeRef mainType = LLVMFunctionType(i32type, new PointerPointer<LLVMTypeRef>(0), 0, 0);
         LLVMValueRef mainFunction = LLVMAddFunction(module, "main", mainType);
 
@@ -69,21 +69,17 @@ public class OriginalPassByReference {
         // create a new instance of the "Car" type, that is allocated on the STACK
         LLVMValueRef carPointer = LLVMBuildAlloca(builder, structType, "carPtr");
 
-        // get the field pointers from the struct by their declaration indices
-        LLVMValueRef speedFieldPtr = LLVMBuildStructGEP2(builder, structType, carPointer, 0, "speedPtr");
-        LLVMValueRef weightFieldPtr = LLVMBuildStructGEP2(builder, structType, carPointer, 1, "weightPtr");
+        // assign the values directly to the Car instance
+        LLVMBuildStore(builder, LLVMConstInt(i32type, 10, 0), LLVMBuildStructGEP2(builder, structType, carPointer, 0, "speedPtr"));
+        LLVMBuildStore(builder, LLVMConstInt(i32type, 20, 0), LLVMBuildStructGEP2(builder, structType, carPointer, 1, "weightPtr"));
 
-        // assign the pointers of the Car instance with the following data: { speed = 10, weight = 20 }
-        LLVMBuildStore(builder, LLVMConstInt(i32type, 10, 0), speedFieldPtr);
-        LLVMBuildStore(builder, LLVMConstInt(i32type, 20, 0), weightFieldPtr);
-
-        // call the test function that takes in Car by reference, and modifies its fields
-        LLVMValueRef[] arguments = new LLVMValueRef[] { carPointer };
+        // call the test function that takes Car by value
+        LLVMValueRef[] arguments = new LLVMValueRef[] { LLVMBuildLoad2(builder, structType, carPointer, "carInst") };
         LLVMBuildCall2(builder, testType, testFunction, new PointerPointer<>(arguments), 1, "");
 
-        // load the values from the previously assigned pointers, and store them in two local variables
-        LLVMValueRef speedValue = LLVMBuildLoad2(builder, i32type, speedFieldPtr, "speed");
-        LLVMValueRef weightValue = LLVMBuildLoad2(builder, i32type, weightFieldPtr, "weight");
+        // load the values from the previously assigned pointers and store them in two local variables
+        LLVMValueRef speedValue = LLVMBuildLoad2(builder, i32type, LLVMBuildStructGEP2(builder, structType, carPointer, 0, ""), "speed");
+        LLVMValueRef weightValue = LLVMBuildLoad2(builder, i32type, LLVMBuildStructGEP2(builder, structType, carPointer, 1, ""), "weight");
 
         // add the two values
         LLVMValueRef sumValue = LLVMBuildAdd(builder, speedValue, weightValue, "sum");

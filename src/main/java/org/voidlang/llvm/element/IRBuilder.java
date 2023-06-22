@@ -400,8 +400,12 @@ public class IRBuilder implements Disposable {
         return new IRValue(res);
     }
 
+    public IRValue call(IRFunction function, List<IRValue> arguments) {
+        return call(function, arguments, "");
+    }
+
     public IRValue alloc(IRStruct type, String name) {
-        return new IRValue(LLVMBuildAlloca(handle, type.getHandle(), "myCar"));
+        return new IRValue(LLVMBuildAlloca(handle, type.getHandle(), name));
     }
 
     public IRValue structMemberPointer(IRStruct type, IRValue instance, int memberIndex, String name) {
@@ -416,7 +420,13 @@ public class IRBuilder implements Disposable {
         return new IRValue(LLVMBuildLoad2(handle, type.getHandle(), pointer.getHandle(), name));
     }
 
+    public IRValue insert(IRValue instance, IRValue value, int memberIndex, String name) {
+        return new IRValue(LLVMBuildInsertValue(handle, instance.getHandle(), value.getHandle(), memberIndex, name));
+    }
 
+    public IRValue extract(IRValue instance, int memberIndex, String name) {
+        return new IRValue(LLVMBuildExtractValue(handle, instance.getHandle(), memberIndex, name));
+    }
 
     @Override
     public void dispose() {

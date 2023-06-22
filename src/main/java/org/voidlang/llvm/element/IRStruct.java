@@ -1,5 +1,6 @@
 package org.voidlang.llvm.element;
 
+import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.LLVMTypeRef;
 
@@ -9,22 +10,23 @@ import static org.bytedeco.llvm.global.LLVM.LLVMStructCreateNamed;
 import static org.bytedeco.llvm.global.LLVM.LLVMStructSetBody;
 
 public class IRStruct extends IRType {
-    private final List<IRType> members;
-
-    IRStruct(LLVMTypeRef handle, IRContext context, List<IRType> members) {
+    IRStruct(LLVMTypeRef handle, IRContext context) {
         super(handle, context);
-        this.members = members;
+    }
+
+    public IRStruct setMembers(List<IRType> members) {
+        PointerPointer<Pointer> args = new PointerPointer<>(members.size());
+        for (int i = 0; i < members.size(); i++)
+            args.put(i, members.get(i).getHandle());
+        LLVMStructSetBody(getHandle(), args, members.size(), 0);
+        return this;
+    }
+
+    public static IRStruct define(IRContext context, String name) {
+        return new IRStruct(LLVMStructCreateNamed(context.getHandle(), name), context);
     }
 
     public static IRStruct define(IRContext context, String name, List<IRType> members) {
-        LLVMTypeRef handle = LLVMStructCreateNamed(context.getHandle(), name);
-
-        PointerPointer<LLVMTypeRef> types = new PointerPointer<>(members.size());
-        for (int i = 0; i < members.size(); i++)
-            types.put(i, members.get(i).getHandle());
-
-        LLVMStructSetBody(handle, types, members.size(), 0);
-
-        return new IRStruct(handle, context, members);
+        return define(context, name).setMembers(members);
     }
 }
