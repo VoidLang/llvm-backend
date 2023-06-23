@@ -1,10 +1,12 @@
 package org.voidlang.llvm.element;
 
+import jdk.nashorn.internal.ir.Block;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.LLVMBuilderRef;
 import org.bytedeco.llvm.LLVM.LLVMValueRef;
 
+import java.net.URL;
 import java.util.List;
 
 import static org.bytedeco.llvm.global.LLVM.*;
@@ -404,7 +406,7 @@ public class IRBuilder implements Disposable {
         return call(function, arguments, "");
     }
 
-    public IRValue alloc(IRStruct type, String name) {
+    public IRValue alloc(IRType type, String name) {
         return new IRValue(LLVMBuildAlloca(handle, type.getHandle(), name));
     }
 
@@ -417,7 +419,9 @@ public class IRBuilder implements Disposable {
     }
 
     public IRValue load(IRType type, IRValue pointer, String name) {
+
         return new IRValue(LLVMBuildLoad2(handle, type.getHandle(), pointer.getHandle(), name));
+
     }
 
     public IRValue insert(IRValue instance, IRValue value, int memberIndex, String name) {
@@ -426,6 +430,22 @@ public class IRBuilder implements Disposable {
 
     public IRValue extract(IRValue instance, int memberIndex, String name) {
         return new IRValue(LLVMBuildExtractValue(handle, instance.getHandle(), memberIndex, name));
+    }
+
+    public IRValue compareInt(Comparator comparator, IRValue left, IRValue right, String name) {
+        return new IRValue(LLVMBuildICmp(handle, comparator.getCode(), left.getHandle(), right.getHandle(), name));
+    }
+
+    public IRValue compareInt(Comparator comparator, IRValue left, IRValue right) {
+        return compareInt(comparator, left, right);
+    }
+
+    public IRValue jump(IRBlock destination) {
+        return new IRValue(LLVMBuildBr(handle, destination.getHandle()));
+    }
+
+    public IRValue jumpIf(IRValue condition, IRBlock ifBlock, IRBlock elseBlock) {
+        return new IRValue(LLVMBuildCondBr(handle, condition.getHandle(), ifBlock.getHandle(), elseBlock.getHandle()));
     }
 
     @Override

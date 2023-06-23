@@ -104,6 +104,7 @@ public class Factorial {
             return;
         }
 
+
         LLVMGenericValueRef argument = LLVMCreateGenericValueOfInt(i32Type, 10, /* signExtend */ 0);
         LLVMGenericValueRef result = LLVMRunFunction(engine, factorial, /* argumentCount */ 1, argument);
         System.out.println();

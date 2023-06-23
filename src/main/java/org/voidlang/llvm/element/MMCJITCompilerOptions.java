@@ -9,6 +9,14 @@ public class MMCJITCompilerOptions {
         this.handle = handle;
     }
 
+    public void setOptLevel(int level) {
+        handle.OptLevel(level);
+    }
+
+    public int getOptLevel() {
+        return handle.OptLevel();
+    }
+
     public LLVMMCJITCompilerOptions getHandle() {
         return handle;
     }

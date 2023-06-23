@@ -1,4 +1,4 @@
-package wrapper.struct;
+package wrapper.conditional;
 
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.javacpp.Pointer;
@@ -10,7 +10,7 @@ import java.util.Collections;
 import static org.bytedeco.llvm.global.LLVM.*;
 import static org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget;
 
-public class PassByValue {
+public class IfElse {
     public static void main(String[] args) {
         // Initialize LLVM components
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
@@ -26,34 +26,37 @@ public class PassByValue {
 
         // declare return types in the context
         IRType i32type = IRType.int32(context);
-        IRType voidType = IRType.voidType(context);
 
-        // create a named type "Car" with the two i32 fields
-        ArrayList<IRType> members = new ArrayList<>();
-        members.add(i32type);
-        members.add(i32type);
-        IRStruct carType = IRStruct.define(context, "Car", members);
-
-        // create the test function that takes in a Car value
-        IRFunctionType testType = IRFunctionType.create(voidType, Collections.singletonList(carType));
+        // create the test function that takes in an i32 parameter
+        IRFunctionType testType = IRFunctionType.create(i32type, Collections.singletonList(i32type));
         IRFunction testFunction = IRFunction.create(module, "test", testType);
 
         // add the "entry" block to the function, so instructions can be added
         IRBlock testEntry = IRBlock.create(testFunction, "entry");
         builder.positionAtEnd(testEntry);
 
-        // get the Car value from the function parameters
+        // get the i32 value from the function parameters
         IRValue parameter = testFunction.getParameter(0);
 
-        // assign new values for the Car parameter
-        builder.insert(parameter, i32type.constInt(100), 0, "speedInsert");
-        builder.insert(parameter, i32type.constInt(50), 1, "weightInsert");
+        // Create basic blocks for the if-then and else clauses
+        IRBlock ifBlock = IRBlock.create(testFunction, "if");
+        IRBlock elseBlock = IRBlock.create(testFunction, "else");
 
-        // extract the field values from the Car parameter
-        builder.extract(parameter, 0, "speed");
-        builder.extract(parameter, 1, "weight");
+        // Compare the argument with 30
+        IRValue operand = i32type.constInt(30);
+        Comparator operator = Comparator.SIGNED_INTEGER_GREATER_THAN;
+        IRValue condition = builder.compareInt(operator, parameter, operand, "cmp");
 
-        builder.returnVoid();
+        // Emit the branch instruction based on the condition
+        builder.jumpIf(condition, ifBlock, elseBlock);
+
+        // Emit the if-then clause
+        builder.positionAtEnd(ifBlock);
+        builder.returnValue(i32type.constInt(200));
+
+        // Emit the else clause
+        builder.positionAtEnd(elseBlock);
+        builder.returnValue(i32type.constInt(100));
 
         // create the program entry point
         IRFunctionType mainType = IRFunctionType.create(context, i32type, new ArrayList<>(), false);
@@ -63,31 +66,8 @@ public class PassByValue {
         IRBlock block = IRBlock.create(context, main, "entry");
         builder.positionAtEnd(block);
 
-        // create an instance of a Car as a pointer on the stack
-        IRValue carPointer = builder.alloc(carType, "carPtr");
-
-        // get the field pointers from the struct by their declaration indices
-        IRValue speedPtr = builder.structMemberPointer(carType, carPointer, 0, "speedPtr");
-        IRValue weightPtr = builder.structMemberPointer(carType, carPointer, 1, "weightPtr");
-
-        // assign the pointers of the Car instance with the following data: { speed = 10, weight = 20 }
-        builder.store(i32type.constInt(10), speedPtr);
-        builder.store(i32type.constInt(20), weightPtr);
-
-        // dereference the Car pointer, therefore it can be used as a value
-        IRValue carInstance = builder.load(carType, carPointer, "carVal");
-
-        // call the test function that takes in Car by value, therefore the changes made
-        // in test, will not affect the Car inside the main function
-        builder.call(testFunction, Collections.singletonList(carInstance));
-
-        // load the values from the previously assigned pointers, and store them in two local variables
-        IRValue speed = builder.load(i32type, speedPtr, "speed");
-        IRValue weight = builder.load(i32type, weightPtr, "weight");
-
-        // make the main method return their sum
-        IRValue sum = builder.add(speed, weight, "sum");
-        builder.returnValue(sum);
+        IRValue call = builder.call(testFunction, Collections.singletonList(i32type.constInt(40)));
+        builder.returnValue(call);
 
         // Verify the module
         BytePointer error = new BytePointer((Pointer) null);
