@@ -113,4 +113,20 @@ public class IRType {
     public static IRType typeOf(IRValue value) {
         return new IRType(LLVMTypeOf(value.getHandle()), IRContext.global());
     }
+
+    public IRValue constNull() {
+        return new IRValue(LLVMConstNull(handle));
+    }
+
+    public static IRValue constNull(IRType type) {
+        return new IRValue(LLVMConstNull(type.getHandle()));
+    }
+
+    public IRValue nullptr() {
+        return new IRValue(LLVMConstPointerNull(handle));
+    }
+
+    public static IRValue nullptr(IRType type) {
+        return new IRValue(LLVMConstPointerNull(type.getHandle()));
+    }
 }

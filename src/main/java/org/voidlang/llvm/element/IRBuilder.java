@@ -437,7 +437,7 @@ public class IRBuilder implements Disposable {
     }
 
     public IRValue compareInt(Comparator comparator, IRValue left, IRValue right) {
-        return compareInt(comparator, left, right);
+        return compareInt(comparator, left, right, "");
     }
 
     public IRValue jump(IRBlock destination) {
@@ -446,6 +446,22 @@ public class IRBuilder implements Disposable {
 
     public IRValue jumpIf(IRValue condition, IRBlock ifBlock, IRBlock elseBlock) {
         return new IRValue(LLVMBuildCondBr(handle, condition.getHandle(), ifBlock.getHandle(), elseBlock.getHandle()));
+    }
+
+    public IRValue and(IRValue left, IRValue right, String name) {
+        return new IRValue(LLVMBuildAnd(handle, left.getHandle(), right.getHandle(), name));
+    }
+
+    public IRValue and(IRValue left, IRValue right) {
+        return and(left, right, "");
+    }
+
+    public IRValue or(IRValue left, IRValue right, String name) {
+        return new IRValue(LLVMBuildOr(handle, left.getHandle(), right.getHandle(), name));
+    }
+
+    public IRValue or(IRValue left, IRValue right) {
+        return or(left, right, "");
     }
 
     @Override

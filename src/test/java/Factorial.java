@@ -55,12 +55,8 @@ public class Factorial {
         LLVMAddIncoming(phi, phiValues, phiBlocks, /* pairCount */ 2);
         LLVMBuildRet(builder, phi);
 
-
-
         // SETUP MAIN METHOD
 
-
-        // LLVMTypeRef mainType = LLVMFunctionType(i32Type, new LLVMTypeRef[]{}, 0, 0);
         LLVMTypeRef mainType = LLVMFunctionType(i32Type, new PointerPointer<>(), /* argumentCount */ 0, /* isVariadic */ 0);
         LLVMValueRef mainFunction = LLVMAddFunction(module, "main", mainType);
         LLVMBasicBlockRef mainEntry = LLVMAppendBasicBlockInContext(context, mainFunction, "entry");
@@ -72,14 +68,7 @@ public class Factorial {
         LLVMValueRef res = LLVMBuildCall2(builder, factorialType, factorial, mArgs, 1, "factorialResult");
         //LLVMValueRef result = LLVMBuildCall2(builder, factorialType, factorial, arguments, 1, "factorialResult = factorial(nMinusOne)");
         LLVMBuildRet(builder, res);
-
-
         // <end>
-
-
-
-
-
 
         // Stage 3: Verify the module using LLVMVerifier
         if (LLVMVerifyModule(module, LLVMPrintMessageAction, error) != 0) {
@@ -103,7 +92,6 @@ public class Factorial {
             LLVMDisposeMessage(error);
             return;
         }
-
 
         LLVMGenericValueRef argument = LLVMCreateGenericValueOfInt(i32Type, 10, /* signExtend */ 0);
         LLVMGenericValueRef result = LLVMRunFunction(engine, factorial, /* argumentCount */ 1, argument);
