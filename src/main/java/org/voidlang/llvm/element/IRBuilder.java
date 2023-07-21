@@ -1,12 +1,10 @@
 package org.voidlang.llvm.element;
 
-import jdk.nashorn.internal.ir.Block;
 import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.LLVMBuilderRef;
 import org.bytedeco.llvm.LLVM.LLVMValueRef;
 
-import java.net.URL;
 import java.util.List;
 
 import static org.bytedeco.llvm.global.LLVM.*;
@@ -408,6 +406,10 @@ public class IRBuilder implements Disposable {
 
     public IRValue alloc(IRType type, String name) {
         return new IRValue(LLVMBuildAlloca(handle, type.getHandle(), name));
+    }
+
+    public IRValue malloc(IRType type, String name) {
+        return new IRValue(LLVMBuildMalloc(handle, type.getHandle(), name));
     }
 
     public IRValue structMemberPointer(IRStruct type, IRValue instance, int memberIndex, String name) {

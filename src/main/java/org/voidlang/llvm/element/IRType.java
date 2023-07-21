@@ -110,6 +110,10 @@ public class IRType {
         return pointerType(type, 0);
     }
 
+    public IRType toPointerType() {
+        return pointerType(this);
+    }
+
     public static IRType typeOf(IRValue value) {
         return new IRType(LLVMTypeOf(value.getHandle()), IRContext.global());
     }
