@@ -5,11 +5,12 @@ import org.bytedeco.javacpp.Pointer;
 import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.bytedeco.llvm.global.LLVM.*;
-import static org.bytedeco.llvm.global.LLVM.LLVMInitializeNativeTarget;
 
 public class Console {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         // Initialize LLVM components
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
         LLVMLinkInMCJIT();
@@ -17,61 +18,75 @@ public class Console {
         LLVMInitializeNativeAsmParser();
         LLVMInitializeNativeTarget();
 
-        // Dynamically load kernel32 library
-        LLVMLoadLibraryPermanently("kernel32.dll");
+        LLVMContextRef context = LLVMContextCreate();
+        LLVMModuleRef module = LLVMModuleCreateWithNameInContext("print_test", context);
+        LLVMBuilderRef builder = LLVMCreateBuilderInContext(context);
 
-        LLVMModuleRef module = LLVMModuleCreateWithName("my_module");
-        LLVMBuilderRef builder = LLVMCreateBuilder();
+        LLVMTypeRef i32Type = LLVMInt32TypeInContext(context);
+        LLVMTypeRef i8Type = LLVMInt8TypeInContext(context);
+        // LLVMTypeRef handleType = LLVMPointerTypeInContext(context, 0);
+        LLVMTypeRef i8PointerType = LLVMPointerType(i8Type, 0);
+        LLVMTypeRef i32PointerType = LLVMPointerType(i32Type, 0);
 
         // Create the GetStdHandle function declaration
         LLVMTypeRef[] getStdHandleParamTypes = {
-            LLVMInt32Type()
+            i32Type
         };
-        LLVMTypeRef getStdHandleType = LLVMFunctionType(LLVMInt32Type(), new PointerPointer<>(getStdHandleParamTypes), getStdHandleParamTypes.length, 0);
+        LLVMTypeRef getStdHandleType = LLVMFunctionType(i32Type, new PointerPointer<>(getStdHandleParamTypes), getStdHandleParamTypes.length, 0);
         LLVMValueRef getStdHandleFunc = LLVMAddFunction(module, "GetStdHandle", getStdHandleType);
 
-        // Call the GetStdHandle function
-        LLVMValueRef STD_OUTPUT_HANDLE = LLVMConstInt(LLVMInt32Type(), -11, 0);
-        LLVMValueRef[] getStdHandleArgs = { STD_OUTPUT_HANDLE };
+        LLVMTypeRef getLastErrorType = LLVMFunctionType(i32Type, new PointerPointer<LLVMTypeRef>(), 0, 0);
+        LLVMValueRef getLastErrorFunc = LLVMAddFunction(module, "GetLastError", getLastErrorType);
 
-        LLVMValueRef consoleHandle = LLVMBuildCall2(builder, getStdHandleType, getStdHandleFunc, new PointerPointer<>(getStdHandleArgs), getStdHandleArgs.length, "consoleHandle");
-        consoleHandle = LLVMBuildIntToPtr(builder, consoleHandle, LLVMPointerType(LLVMInt8Type(), 0), "consoleHandle");
-
-        // Declare the WriteConsole function type
-        LLVMTypeRef[] paramTypes = {
-            LLVMPointerType(LLVMInt8Type(), 0),
-            LLVMInt32Type(),
-            LLVMInt32Type(),
-            LLVMPointerType(LLVMInt32Type(), 0)
+        LLVMTypeRef[] writeConsoleAParamTypes = {
+            i32Type, // std handle
+            i8PointerType, // message buffer
+            i32Type, // buffer length
+            i32PointerType, // chars written (output)
+            i32Type // NULL
         };
-        LLVMTypeRef writeConsoleType = LLVMFunctionType(LLVMInt32Type(), new PointerPointer<>(paramTypes), paramTypes.length, 0);
 
-        // Declare and define the function in the module
-        LLVMValueRef writeConsoleFunc = LLVMAddFunction(module, "WriteConsoleA", writeConsoleType);
+        LLVMTypeRef writeConsoleAType = LLVMFunctionType(i32Type, new PointerPointer<>(writeConsoleAParamTypes), writeConsoleAParamTypes.length, 0);
+        LLVMValueRef writeConsoleAFunc = LLVMAddFunction(module, "WriteConsoleA", writeConsoleAType);
 
-
-        LLVMTypeRef mainType = LLVMFunctionType(LLVMInt32Type(), new PointerPointer<>(), 0, 0);
+        LLVMTypeRef mainType = LLVMFunctionType(i32Type, new PointerPointer<>(), 0, 0);
         LLVMValueRef mainFunction = LLVMAddFunction(module, "main", mainType);
-        LLVMBasicBlockRef entry = LLVMAppendBasicBlock(mainFunction, "entry");
+        LLVMBasicBlockRef entry = LLVMAppendBasicBlockInContext(context, mainFunction, "entry");
+
         LLVMPositionBuilderAtEnd(builder, entry);
 
-        /*
-        // Call the WriteConsole function
-        String message = "Hello, console!";
+        PointerPointer<Pointer> mArgs = new PointerPointer<>(1)
+            .put(0, LLVMConstInt(i32Type, -11, 0)); // STANDARD OUTPUT
 
+        // LLVMValueRef consoleHandle = LLVMConstInt(i32Type, getJavaConsoleHandle(), 0);
+        LLVMValueRef consoleHandle = LLVMBuildCall2(builder, getStdHandleType, getStdHandleFunc, mArgs, 1, "std_handle");
+
+        String message = "Hello, World!";
         byte[] messageBytes = message.getBytes();
-        LLVMValueRef bytesWritten = LLVMConstNull(LLVMPointerType(LLVMInt32Type(), 0));
+
+        LLVMValueRef messageString = LLVMConstStringInContext(context, message, message.length(), 1);
+
+        LLVMTypeRef stringType = LLVMArrayType(i8Type, message.length());
+        LLVMValueRef constString = LLVMAddGlobal(module, stringType, "text");
+        LLVMSetInitializer(constString, messageString);
+
+        // LLVMValueRef bytesWritten = LLVMConstNull(i32PointerType);
+        LLVMValueRef bytesWritten = LLVMBuildAlloca(builder, i32Type, "bytesWritten");
+
         LLVMValueRef[] writeConsoleArgs = {
             consoleHandle,
-            LLVMConstString(message, message.length(), 0),
-            LLVMConstInt(LLVMInt32Type(), messageBytes.length, 0),
-            LLVMConstInt(LLVMInt32Type(), 0, 0),
-            bytesWritten
+            LLVMGetNamedGlobal(module, "text"),
+            LLVMConstInt(i32Type, messageBytes.length, 0),
+            bytesWritten,
+            LLVMConstInt(i32Type, 0, 0),
         };
-        LLVMBuildCall2(builder, writeConsoleType, writeConsoleFunc, new PointerPointer<>(writeConsoleArgs), writeConsoleArgs.length, "writeConsoleCall");
-        */
 
-        LLVMBuildRet(builder, LLVMConstInt(LLVMInt32Type(), 10, 0));
+        LLVMBuildCall2(builder, writeConsoleAType, writeConsoleAFunc, new PointerPointer<>(writeConsoleArgs), writeConsoleArgs.length, "print");
+
+        LLVMValueRef written = LLVMBuildLoad2(builder, i32Type, bytesWritten, "written");
+
+        // Build the return instruction
+        LLVMBuildRet(builder, written);
 
         // Stage 3: Verify the module using LLVMVerifier
         BytePointer error = new BytePointer();
@@ -79,6 +94,10 @@ public class Console {
             LLVMDisposeMessage(error);
             return;
         }
+
+        String folder = "D:\\.dev\\GitHub\\LLVM-Backend\\src\\test\\java\\wrapper\\console\\files\\";
+        LLVMWriteBitcodeToFile(module, folder + "bitcode.bc");
+        LLVMPrintModuleToFile(module,  folder + "dump.ll", new BytePointer());
 
         // Create the execution engine and load the module
         LLVMExecutionEngineRef engine = new LLVMExecutionEngineRef();
@@ -91,8 +110,16 @@ public class Console {
             return;
         }
 
-        // Clean up resources
-        LLVMDisposeExecutionEngine(engine);
+        LLVMGenericValueRef result = LLVMRunFunction(engine, mainFunction, 0, new PointerPointer<LLVMGenericValueRef>());
+
+        String debug = LLVMPrintModuleToString(module).getString(StandardCharsets.UTF_8);
+        System.err.println(debug);
+
+        System.out.println("Result: " + LLVMGenericValueToInt(result, /* signExtend */ 0));
+
+        // Dispose of the allocated resources
+        LLVMDisposeBuilder(builder);
         LLVMDisposeModule(module);
+        LLVMContextDispose(context);
     }
 }
