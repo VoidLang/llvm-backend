@@ -421,9 +421,7 @@ public class IRBuilder implements Disposable {
     }
 
     public IRValue load(IRType type, IRValue pointer, String name) {
-
         return new IRValue(LLVMBuildLoad2(handle, type.getHandle(), pointer.getHandle(), name));
-
     }
 
     public IRValue insert(IRValue instance, IRValue value, int memberIndex, String name) {
@@ -464,6 +462,22 @@ public class IRBuilder implements Disposable {
 
     public IRValue or(IRValue left, IRValue right) {
         return or(left, right, "");
+    }
+
+    public IRValue negate(IRValue operand, String name) {
+        return new IRValue(LLVMBuildNeg(handle, operand.getHandle(), name));
+    }
+
+    public IRValue negate(IRValue operand) {
+        return negate(operand, "");
+    }
+
+    public IRValue not(IRValue operand, String name) {
+        return new IRValue(LLVMBuildNot(handle, operand.getHandle(), name));
+    }
+
+    public IRValue not(IRValue operand) {
+        return not(operand, "");
     }
 
     @Override
