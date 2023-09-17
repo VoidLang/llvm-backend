@@ -27,3 +27,7 @@ replay_pid*
 /target
 /.idea
 
+# Executables
+*.bc
+*.ll
+*.exe
