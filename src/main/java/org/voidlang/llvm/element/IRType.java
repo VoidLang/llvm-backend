@@ -94,6 +94,22 @@ public class IRType {
         return new IRType(LLVMInt128TypeInContext(context.getHandle()), context);
     }
 
+    public static IRType floatType(IRContext context) {
+        return new IRType(LLVMFloatTypeInContext(context.getHandle()), context);
+    }
+
+    public static IRType floatType() {
+        return new IRType(LLVMFloatType(), IRContext.global());
+    }
+
+    public static IRType doubleType(IRContext context) {
+        return new IRType(LLVMDoubleTypeInContext(context.getHandle()), context);
+    }
+
+    public static IRType doubleType() {
+        return new IRType(LLVMDoubleType(), IRContext.global());
+    }
+
     public static IRType voidType() {
         return new IRType(LLVMVoidType(), IRContext.global());
     }
