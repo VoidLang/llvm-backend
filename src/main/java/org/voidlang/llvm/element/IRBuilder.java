@@ -480,6 +480,14 @@ public class IRBuilder implements Disposable {
         return not(operand, "");
     }
 
+    public IRValue select(IRValue condition, IRValue ifValue, IRValue elseValue, String name) {
+        return new IRValue(LLVMBuildSelect(handle, condition.getHandle(), ifValue.getHandle(), elseValue.getHandle(), name));
+    }
+    
+    public IRValue select(IRValue condition, IRValue ifValue, IRValue elseValue) {
+        return select(condition, ifValue, elseValue, "");
+    }
+
     @Override
     public void dispose() {
         LLVMDisposeBuilder(handle);
