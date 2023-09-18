@@ -16,7 +16,7 @@ public class IRGenericValue {
     }
 
     public long toInt() {
-        return toInt(false);
+        return toInt(true);
     }
 
     public LLVMGenericValueRef getHandle() {
