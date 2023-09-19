@@ -480,12 +480,12 @@ public class IRBuilder implements Disposable {
         return not(operand, "");
     }
 
-    public IRValue select(IRValue condition, IRValue ifValue, IRValue elseValue, String name) {
-        return new IRValue(LLVMBuildSelect(handle, condition.getHandle(), ifValue.getHandle(), elseValue.getHandle(), name));
+    public IRValue select(IRValue condition, IRValue ifCase, IRValue elseCase, String name) {
+        return new IRValue(LLVMBuildSelect(handle, condition.getHandle(), ifCase.getHandle(), elseCase.getHandle(), name));
     }
-    
-    public IRValue select(IRValue condition, IRValue ifValue, IRValue elseValue) {
-        return select(condition, ifValue, elseValue, "");
+
+    public IRValue select(IRValue condition, IRValue ifCase, IRValue elseCase) {
+        return select(condition, ifCase, elseCase, "");
     }
 
     @Override
