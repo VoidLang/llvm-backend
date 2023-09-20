@@ -21,6 +21,14 @@ public class IRModule implements Disposable {
         this.name = name;
     }
 
+    public IRGlobal addGlobal(IRType type, String name) {
+        return new IRGlobal(LLVMAddGlobal(handle, type.getHandle(), name));
+    }
+
+    public IRGlobal getGlobal(String name) {
+        return new IRGlobal(LLVMGetNamedGlobal(handle, name));
+    }
+
     public void dump() {
         LLVMDumpModule(handle);
     }

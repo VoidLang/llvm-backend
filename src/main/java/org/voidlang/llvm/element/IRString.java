@@ -9,7 +9,7 @@ public class IRString extends IRValue {
 
     private IRType type;
 
-    IRString(IRContext context, String message, int length, boolean nullTerminate) {
+    public IRString(IRContext context, String message, int length, boolean nullTerminate) {
         super(LLVMConstStringInContext(context.getHandle(), message, length, nullTerminate ? 1 : 0));
         this.message = message;
         this.length = length;
@@ -18,7 +18,7 @@ public class IRString extends IRValue {
         type = IRType.arrayType(IRType.int8(context), length);
     }
 
-    IRString(IRContext context, String message, boolean nullTerminate) {
+    public IRString(IRContext context, String message, boolean nullTerminate) {
         this(context, message, message.length(), nullTerminate);
     }
 
