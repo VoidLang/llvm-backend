@@ -130,6 +130,14 @@ public class IRType {
         return pointerType(this);
     }
 
+    public static IRType arrayType(IRType type, int size) {
+        return new IRType(LLVMArrayType(type.getHandle(), size), type.getContext());
+    }
+
+    public IRType toArrayType(int size) {
+        return arrayType(this, size);
+    }
+
     public static IRType typeOf(IRValue value) {
         return new IRType(LLVMTypeOf(value.getHandle()), IRContext.global());
     }
