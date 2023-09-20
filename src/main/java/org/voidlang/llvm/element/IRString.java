@@ -16,7 +16,7 @@ public class IRString extends IRValue {
         this.length = length;
         this.nullTerminate = nullTerminate;
 
-        type = IRType.arrayType(IRType.int8(context), length);
+        type = IRType.arrayType(IRType.int8(context), length + (nullTerminate ? 1 : 0));
     }
 
     public IRString(IRContext context, String message, boolean nullTerminate) {
