@@ -95,7 +95,7 @@ public class Console {
             return;
         }
 
-        String folder = "D:\\.dev\\GitHub\\LLVM-Backend\\src\\test\\java\\wrapper\\console\\files\\";
+        String folder = "C:\\Users\\admin\\Documents\\GitHub\\LLVM-Backend\\src\\test\\java\\wrapper\\console\\files\\";
         LLVMWriteBitcodeToFile(module, folder + "bitcode.bc");
         LLVMPrintModuleToFile(module,  folder + "dump.ll", new BytePointer());
 
