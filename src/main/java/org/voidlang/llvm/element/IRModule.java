@@ -3,6 +3,7 @@ package org.voidlang.llvm.element;
 import org.bytedeco.javacpp.BytePointer;
 import org.bytedeco.llvm.LLVM.LLVMModuleRef;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
@@ -58,8 +59,24 @@ public class IRModule implements Disposable {
         return new IRModule(LLVMModuleCreateWithNameInContext(name, context.getHandle()), context, name);
     }
 
-    public IRMemoryBuffer writeToMemory() {
+    public IRMemoryBuffer writeBitCodeToFile() {
         return new IRMemoryBuffer(LLVMWriteBitcodeToMemoryBuffer(handle));
+    }
+
+    public void writeBitcodeToFile(String file) {
+        LLVMWriteBitcodeToFile(handle, file);
+    }
+
+    public void writeBitcodeToFile(File file) {
+        writeBitcodeToFile(file.getAbsoluteFile().toString());
+    }
+
+    public void printIRToFile(String file) {
+        LLVMPrintModuleToFile(handle, file, new BytePointer());
+    }
+
+    public void printIRToFile(File file) {
+        printIRToFile(file.getAbsoluteFile().toString());
     }
 
     public String print() {

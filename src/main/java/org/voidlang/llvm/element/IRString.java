@@ -10,7 +10,8 @@ public class IRString extends IRValue {
     private IRType type;
 
     public IRString(IRContext context, String message, int length, boolean nullTerminate) {
-        super(LLVMConstStringInContext(context.getHandle(), message, length, nullTerminate ? 1 : 0));
+        // null terminate is inverted, as it wants 'do not terminate'
+        super(LLVMConstStringInContext(context.getHandle(), message, length, nullTerminate ? 0 : 1));
         this.message = message;
         this.length = length;
         this.nullTerminate = nullTerminate;
