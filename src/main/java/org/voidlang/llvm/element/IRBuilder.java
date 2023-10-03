@@ -440,6 +440,14 @@ public class IRBuilder implements Disposable {
         return compareInt(comparator, left, right, "");
     }
 
+    public IRValue compareFloat(Comparator comparator, IRValue left, IRValue right, String name) {
+        return new IRValue(LLVMBuildFCmp(handle, comparator.getCode(), left.getHandle(), right.getHandle(), name));
+    }
+
+    public IRValue compareFloat(Comparator comparator, IRValue left, IRValue right) {
+        return compareFloat(comparator, left, right, "");
+    }
+
     public IRValue signedRemainder(IRValue operand, IRValue divisor, String name) {
         return new IRValue(LLVMBuildSRem(handle, operand.getHandle(), divisor.getHandle(), name));
     }
