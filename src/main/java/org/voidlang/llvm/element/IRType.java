@@ -26,6 +26,10 @@ public class IRType {
         return new IRValue(LLVMConstInt(handle, value, signExtend ? 1 : 0));
     }
 
+    public IRValue constFloat(double value) {
+        return new IRValue(LLVMConstReal(handle, value));
+    }
+
     public IRValue constInt(long value) {
         return constInt(value, false);
     }
