@@ -516,6 +516,126 @@ public class IRBuilder implements Disposable {
         return select(condition, ifCase, elseCase, "");
     }
 
+    public IRValue signedIntToFloat(IRValue value, IRType floatType, String name) {
+        return new IRValue(LLVMBuildSIToFP(handle, value.getHandle(), floatType.getHandle(), name));
+    }
+
+    public IRValue signedIntToFloat(IRValue value, IRType floatType) {
+        return signedIntToFloat(value, floatType, "");
+    }
+
+    public IRValue unsignedIntToFloat(IRValue value, IRType floatType, String name) {
+        return new IRValue(LLVMBuildUIToFP(handle, value.getHandle(), floatType.getHandle(), name));
+    }
+
+    public IRValue unsignedIntToFloat(IRValue value, IRType floatType) {
+        return unsignedIntToFloat(value, floatType, "");
+    }
+
+    public IRValue floatToSignedInt(IRValue value, IRType intType, String name) {
+        return new IRValue(LLVMBuildFPToSI(handle, value.getHandle(), intType.getHandle(), name));
+    }
+
+    public IRValue floatToSignedInt(IRValue value, IRType intType) {
+        return floatToSignedInt(value, intType, "");
+    }
+
+    public IRValue floatToUnsignedInt(IRValue value, IRType intType, String name) {
+        return new IRValue(LLVMBuildFPToUI(handle, value.getHandle(), intType.getHandle(), name));
+    }
+
+    public IRValue floatToUnsignedInt(IRValue value, IRType intType) {
+        return floatToUnsignedInt(value, intType, "");
+    }
+
+    public IRValue truncate(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildTrunc(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue truncate(IRValue value, IRType type) {
+        return truncate(value, type, "");
+    }
+
+    public IRValue zeroExtend(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildZExt(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue zeroExtend(IRValue value, IRType type) {
+        return zeroExtend(value, type, "");
+    }
+
+    public IRValue signExtend(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildSExt(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue signExtend(IRValue value, IRType type) {
+        return signExtend(value, type, "");
+    }
+
+    public IRValue floatExtend(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildFPExt(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue floatExtend(IRValue value, IRType type) {
+        return floatExtend(value, type, "");
+    }
+
+    public IRValue floatTruncate(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildFPTrunc(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue floatTruncate(IRValue value, IRType type) {
+        return floatTruncate(value, type, "");
+    }
+
+    public IRValue pointerCast(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildPointerCast(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue pointerCast(IRValue value, IRType type) {
+        return pointerCast(value, type, "");
+    }
+
+    public IRValue intCast(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildIntCast(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue intCast(IRValue value, IRType type) {
+        return intCast(value, type, "");
+    }
+
+    public IRValue floatCast(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildFPCast(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue floatCast(IRValue value, IRType type) {
+        return floatCast(value, type, "");
+    }
+
+    public IRValue bitCast(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildBitCast(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue bitCast(IRValue value, IRType type) {
+        return bitCast(value, type, "");
+    }
+
+    public IRValue intToPointerCast(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildIntToPtr(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue intToPointerCast(IRValue value, IRType type) {
+        return intToPointerCast(value, type, "");
+    }
+
+    public IRValue pointerToIntCast(IRValue value, IRType type, String name) {
+        return new IRValue(LLVMBuildPtrToInt(handle, value.getHandle(), type.getHandle(), name));
+    }
+
+    public IRValue pointerToIntCast(IRValue value, IRType type) {
+        return pointerToIntCast(value, type, "");
+    }
+
     @Override
     public void dispose() {
         LLVMDisposeBuilder(handle);
