@@ -408,8 +408,16 @@ public class IRBuilder implements Disposable {
         return new IRValue(LLVMBuildAlloca(handle, type.getHandle(), name));
     }
 
+    public IRValue alloc(IRType type) {
+        return alloc(type, "");
+    }
+
     public IRValue malloc(IRType type, String name) {
         return new IRValue(LLVMBuildMalloc(handle, type.getHandle(), name));
+    }
+
+    public IRValue malloc(IRType type) {
+        return malloc(type, "");
     }
 
     public IRValue structMemberPointer(IRStruct type, IRValue instance, int memberIndex, String name) {
