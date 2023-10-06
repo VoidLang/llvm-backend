@@ -612,6 +612,14 @@ public class IRBuilder implements Disposable {
         return intCast(value, type, "");
     }
 
+    public IRValue intCast(IRValue value, IRType type, boolean isSigned, String name) {
+        return new IRValue(LLVMBuildIntCast2(handle, value.getHandle(), type.getHandle(), isSigned ? 1 : 0, name));
+    }
+
+    public IRValue intCast(IRValue value, IRType type, boolean isSigned) {
+        return intCast(value, type, isSigned, "");
+    }
+
     public IRValue floatCast(IRValue value, IRType type, String name) {
         return new IRValue(LLVMBuildFPCast(handle, value.getHandle(), type.getHandle(), name));
     }
