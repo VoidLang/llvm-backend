@@ -420,6 +420,10 @@ public class IRBuilder implements Disposable {
         return malloc(type, "");
     }
 
+    public IRValue free(IRValue pointer) {
+        return new IRValue(LLVMBuildFree(handle, pointer.getHandle()));
+    }
+
     public IRValue structMemberPointer(IRStruct type, IRValue instance, int memberIndex, String name) {
         return new IRValue(LLVMBuildStructGEP2(handle, type.getHandle(), instance.getHandle(), memberIndex, name));
     }
