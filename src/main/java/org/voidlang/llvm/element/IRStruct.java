@@ -6,8 +6,7 @@ import org.bytedeco.llvm.LLVM.LLVMTypeRef;
 
 import java.util.List;
 
-import static org.bytedeco.llvm.global.LLVM.LLVMStructCreateNamed;
-import static org.bytedeco.llvm.global.LLVM.LLVMStructSetBody;
+import static org.bytedeco.llvm.global.LLVM.*;
 
 public class IRStruct extends IRType {
     IRStruct(LLVMTypeRef handle, IRContext context) {

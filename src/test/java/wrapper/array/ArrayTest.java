@@ -1,11 +1,14 @@
-package wrapper.function;
+package wrapper.array;
 
-import org.bytedeco.javacpp.*;
+import org.bytedeco.javacpp.BytePointer;
+import org.bytedeco.javacpp.Pointer;
+import org.bytedeco.javacpp.PointerPointer;
 import org.bytedeco.llvm.LLVM.*;
 
 import static org.bytedeco.llvm.global.LLVM.*;
+import static org.bytedeco.llvm.global.LLVM.LLVMModuleCreateWithNameInContext;
 
-public class OriginalFunction {
+public class ArrayTest {
     public static void main(String[] args) {
         // Initialize LLVM components
         LLVMInitializeCore(LLVMGetGlobalPassRegistry());
@@ -19,8 +22,9 @@ public class OriginalFunction {
         LLVMModuleRef module = LLVMModuleCreateWithNameInContext("my_module", context);
 
         // Create the function type
-        LLVMTypeRef returnType = LLVMInt32TypeInContext(context);
-        LLVMTypeRef functionType = LLVMFunctionType(returnType, new PointerPointer<LLVMTypeRef>(0), 0, 0);
+        LLVMTypeRef i32Type = LLVMInt32TypeInContext(context);
+
+        LLVMTypeRef functionType = LLVMFunctionType(i32Type, new PointerPointer<LLVMTypeRef>(0), 0, 0);
 
         // Create the function
         LLVMValueRef function = LLVMAddFunction(module, "my_function", functionType);
@@ -31,11 +35,46 @@ public class OriginalFunction {
 
         LLVMPositionBuilderAtEnd(builder, entryBlock);
 
+        int arraySize = 5;
+
+        LLVMTypeRef i32ArrayType = LLVMArrayType(i32Type, arraySize);
+
+
+        // allocate an array on the stack
+        LLVMValueRef array = LLVMBuildAlloca(builder, i32ArrayType, "array");
+
+
+        LLVMValueRef[] values = {
+            LLVMConstInt(i32Type, 10, 0),
+            LLVMConstInt(i32Type, 20, 0),
+            LLVMConstInt(i32Type, 30, 0),
+            LLVMConstInt(i32Type, 40, 0),
+            LLVMConstInt(i32Type, 50, 0)
+        };
+
+        for (int i = 0; i < arraySize; i++) {
+            LLVMValueRef pointer = LLVMBuildStructGEP2(builder, i32ArrayType, array, i, "array[" + i + "]");
+            LLVMBuildStore(builder, values[i], pointer);
+        }
+
+        // dynamically resolve array index pointer using a value from the stack
+        LLVMValueRef pointer = LLVMBuildGEP2(
+            builder, i32ArrayType, array,
+            new PointerPointer<>(
+                LLVMConstInt(i32Type, 0, 0),
+                LLVMConstInt(i32Type, 4, 0)
+            ),
+            2, "index"
+        );
+
+        // LLVMValueRef pointer = LLVMBuildStructGEP2(builder, i32ArrayType, array, 1, "ptr");
+        LLVMValueRef value = LLVMBuildLoad2(builder, i32Type, pointer, "value");
+
         // Create the constant value
-        LLVMValueRef constantValue = LLVMConstInt(returnType, 1337, 0);
+        // LLVMValueRef constantValue = LLVMConstInt(i32Type, 1337, 0);
 
         // Build the return instruction
-        LLVMBuildRet(builder, constantValue);
+        LLVMBuildRet(builder, value);
 
         // Verify the module
         BytePointer error = new BytePointer((Pointer) null);
