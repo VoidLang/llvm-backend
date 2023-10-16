@@ -424,7 +424,7 @@ public class IRBuilder implements Disposable {
         return new IRValue(LLVMBuildFree(handle, pointer.getHandle()));
     }
 
-    public IRValue structMemberPointer(IRStruct type, IRValue instance, int memberIndex, String name) {
+    public IRValue structMemberPointer(IRType type, IRValue instance, int memberIndex, String name) {
         return new IRValue(LLVMBuildStructGEP2(handle, type.getHandle(), instance.getHandle(), memberIndex, name));
     }
 
